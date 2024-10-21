@@ -1,7 +1,7 @@
-const sentMessageIds = new Set(); // Para armazenar os IDs das mensagens já enviadas
+// pages/api/replicator.js
 
 export default async function handler(req, res) {
-    // Definir os cabeçalhos CORS para permitir requisições do frontend
+    // Configurar CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,14 +13,15 @@ export default async function handler(req, res) {
 
     // Adiciona um caso para método GET
     if (req.method === 'GET') {
-        return res.status(200).json({ message: 'Keep alive ping received!' });
+        return res.status(200).json({ message: 'Keep alive ping recebido!' });
     }
 
     // Token e URL da API do Telegram
     const tokenBotOrigem = '6837412955:AAEb5dH8PECn5oX8t5VcArRyejLMLys-pXg';
     const tokenBotDestino = '7348520195:AAGN8xkJXATY1OmyhLkGxu2Kv4z-lR5BtB0';
-    const chatIdOrigem = '-1002029148099'; // ID do grupo/canal de origem
-    const chatIdDestino = '-1002422442915'; // ID do grupo/canal de destino
+    const chatIdOrigem = '-1002029148099';
+    const chatIdDestino = '-1002422442915';
+    const sentMessageIds = new Set(); // Para armazenar os IDs das mensagens já enviadas
 
     // Processa a requisição somente se for POST
     if (req.method === 'POST') {
@@ -68,19 +69,7 @@ export default async function handler(req, res) {
         return res.status(200).send('OK');
     } else {
         // Método não permitido
-        res.setHeader('Allow', ['POST', 'GET']);
+        res.setHeader('Allow', ['GET', 'POST']);
         return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
 }
-
-// Função keep alive
-const keepAlive = async () => {
-    try {
-        await fetch(`https://replicabot.vercel.app/api/replicator`); // Substitua pela URL do seu webhook
-    } catch (error) {
-        console.error('Erro ao manter a aplicação ativa:', error);
-    }
-};
-
-// Chama a função de keep alive a cada 10 minutos
-setInterval(keepAlive, 600000); // A cada 10 minutos (600000 ms)
