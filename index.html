@@ -1,37 +1,17 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Replicador de Bot Telegram</title>
-</head>
-<body>
-    <h1>Replicador de Mensagens</h1>
-    <button id="replicar">Replicar Mensagem</button>
-    <div id="resultado"></div>
+<script>
+async function checkForNewMessages() {
+    const response = await fetch('https://replicabot.vercel.app/api/replicator', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ /* dados necessários */ }),
+    });
 
-    <script>
-        document.getElementById('replicar').addEventListener('click', async () => {
-            try {
-                const response = await fetch('https://replicabot.vercel.app/api/replicator', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        channel_post: {
-                            chat: { id: -1002029148099 }, // ID do canal de origem
-                            text: 'Mensagem de teste' // Mensagem de exemplo
-                        }
-                    })
-                });
+    const data = await response.json();
+    console.log(data);
+}
 
-                const data = await response.json();
-                document.getElementById('resultado').innerText = JSON.stringify(data);
-            } catch (error) {
-                document.getElementById('resultado').innerText = 'Erro ao conectar com a API: ' + error.message;
-            }
-        });
-    </script>
-</body>
-</html>
+// Chama a função a cada 30 segundos
+setInterval(checkForNewMessages, 30000);
+</script>
