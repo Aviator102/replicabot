@@ -1,7 +1,3 @@
-// replicator.js
-
-let sentMessageIds = new Set(); // Para armazenar os IDs das mensagens já enviadas
-
 export default async function handler(req, res) {
     // Definir os cabeçalhos CORS para permitir requisições do frontend
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,23 +9,16 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
+    // Adiciona um caso para método GET
+    if (req.method === 'GET') {
+        return res.status(200).json({ message: 'Keep alive ping received!' });
+    }
+
     // Token e URL da API do Telegram
     const tokenBotOrigem = '6837412955:AAEb5dH8PECn5oX8t5VcArRyejLMLys-pXg';
     const tokenBotDestino = '7348520195:AAGN8xkJXATY1OmyhLkGxu2Kv4z-lR5BtB0';
     const chatIdOrigem = '-1002029148099'; // ID do grupo/canal de origem
     const chatIdDestino = '-1002422442915'; // ID do grupo/canal de destino
-
-    // Função Keep Alive
-    const keepAlive = async () => {
-        try {
-            await fetch(`https://replicabot.vercel.app/api/replicator`); // Substitua pela URL do seu webhook
-        } catch (error) {
-            console.error('Erro ao manter a aplicação ativa:', error);
-        }
-    };
-
-    // Chama a função de keep alive a cada 10 minutos
-    setInterval(keepAlive, 600000); // A cada 10 minutos (600000 ms)
 
     // Processa a requisição somente se for POST
     if (req.method === 'POST') {
@@ -77,7 +66,7 @@ export default async function handler(req, res) {
         return res.status(200).send('OK');
     } else {
         // Método não permitido
-        res.setHeader('Allow', ['POST']);
+        res.setHeader('Allow', ['POST', 'GET']);
         return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
 }
