@@ -11,6 +11,11 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
+    // Adiciona um caso para método GET
+    if (req.method === 'GET') {
+        return res.status(200).json({ message: 'Keep alive ping received!' });
+    }
+
     // Token e ID do grupo/canal
     const tokenBotOrigem = '6837412955:AAEb5dH8PECn5oX8t5VcArRyejLMLys-pXg';
     const tokenBotDestino = '7348520195:AAGN8xkJXATY1OmyhLkGxu2Kv4z-lR5BtB0';
