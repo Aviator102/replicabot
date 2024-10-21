@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     // Função Keep Alive
     const keepAlive = async () => {
         try {
-            await fetch(`https://replicabot.vercel.app/api/replicator.js`); // Substitua pela URL do seu webhook
+            await fetch(`https://replicabot.vercel.app/api/replicator`); // Substitua pela URL do seu webhook
         } catch (error) {
             console.error('Erro ao manter a aplicação ativa:', error);
         }
