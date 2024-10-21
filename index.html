@@ -1,81 +1,59 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Replicação de Mensagens de Bot Telegram</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        h1 {
-            color: #2c3e50;
-        }
-        .message {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            margin-top: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .message .text {
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        .message .date {
-            color: #999;
-            font-size: 0.9em;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <h1>Replicação de Mensagens de Bot Telegram</h1>
+export default async function handler(req, res) {
+    // Definir os cabeçalhos CORS para permitir requisições do frontend
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    <div id="response">Carregando...</div>
+    // Se o método for OPTIONS, retorne 200 OK
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
 
-    <script>
-        // URL da API no Vercel (adicione sua URL Vercel aqui)
-        const apiURL = 'https://seu-backend.vercel.app/api/replicator'; // Substitua pela URL do seu backend
+    // Token e URL da API do Telegram
+    const tokenBotOrigem = '6837412955:AAEb5dH8PECn5oX8t5VcArRyejLMLys-pXg';
+    const tokenBotDestino = '7348520195:AAGN8xkJXATY1OmyhLkGxu2Kv4z-lR5BtB0';
+    const chatIdOrigem = '-1002029148099';
+    const chatIdDestino = '-1002422442915';
 
-        // Função para obter a resposta da API
-        function getReplicatedMessage() {
-            fetch(apiURL)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('response').innerHTML = `
-                            <div class="message">
-                                <div class="text">Mensagem replicada com sucesso!</div>
-                                <div>${data.text}</div>
-                                <div class="date">Horário: ${data.date}</div>
-                            </div>
-                        `;
-                    } else {
-                        document.getElementById('response').innerHTML = `
-                            <div class="error">Erro: ${data.error}</div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('response').innerHTML = `
-                        <div class="error">Erro ao conectar com a API: ${error.message}</div>
-                    `;
+    try {
+        // Requisição para buscar as últimas atualizações do Telegram
+        const response = await fetch(`https://api.telegram.org/bot${tokenBotOrigem}/getUpdates?offset=-1`);
+        const updateData = await response.json();
+
+        if (updateData.ok && updateData.result.length > 0) {
+            const message = updateData.result[0].channel_post;
+
+            if (message && message.chat.id == chatIdOrigem) {
+                // Requisição para enviar a mensagem ao grupo de destino
+                const sendResponse = await fetch(`https://api.telegram.org/bot${tokenBotDestino}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatIdDestino,
+                        text: message.text,
+                    }),
                 });
+                const sendData = await sendResponse.json();
+
+                if (sendData.ok) {
+                    // Envio bem-sucedido
+                    res.status(200).json({ success: true, message: 'Mensagem replicada com sucesso!' });
+                } else {
+                    // Erro ao enviar a mensagem
+                    res.status(500).json({ success: false, error: sendData.description });
+                }
+            } else {
+                // Sem mensagens novas ou do chat correto
+                res.status(200).json({ success: false, message: 'Nenhuma mensagem nova para replicar.' });
+            }
+        } else {
+            // Falha na requisição do Telegram
+            res.status(500).json({ success: false, message: 'Erro ao buscar atualizações.' });
         }
-
-        // Chama a função para carregar a mensagem ao abrir a página
-        getReplicatedMessage();
-
-        // Atualiza a mensagem a cada 5 segundos
-        setInterval(getReplicatedMessage, 5000);
-    </script>
-</body>
-</html>
+    } catch (error) {
+        // Captura qualquer outro erro
+        res.status(500).json({ success: false, error: 'Erro ao conectar com a API', details: error.message });
+    }
+}
