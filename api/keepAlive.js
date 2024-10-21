@@ -1,11 +1,13 @@
-// Adiciona o keep alive ao replicator.js
-const keepAlive = async () => {
-    try {
-        await fetch(`https://replicabot.vercel.app/api/keepAlive`); // Substitua pela URL do seu webhook
-    } catch (error) {
-        console.error('Erro ao manter a aplicação ativa:', error);
+// pages/api/keepAlive.js
+export default function handler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    
+    // Responde a requisições GET
+    if (req.method === 'GET') {
+        return res.status(200).json({ message: 'Keep alive ping received!' });
+    } else {
+        res.setHeader('Allow', ['GET']);
+        return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
-};
-
-// Chama a função de keep alive a cada 10 minutos
-setInterval(keepAlive, 600000); // A cada 10 minutos (600000 ms)
+}
