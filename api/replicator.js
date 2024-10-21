@@ -20,9 +20,11 @@ export default async function handler(req, res) {
         const response = await fetch(`https://api.telegram.org/bot${tokenBotOrigem}/getUpdates?offset=-1`);
         const updateData = await response.json();
 
+        // Verifica se a resposta está correta e se há mensagens
         if (updateData.ok && updateData.result.length > 0) {
             const message = updateData.result[0].channel_post;
 
+            // Verifica se a mensagem é do chat correto
             if (message && message.chat.id == chatIdOrigem) {
                 // Requisição para enviar a mensagem ao grupo de destino
                 const sendResponse = await fetch(`https://api.telegram.org/bot${tokenBotDestino}/sendMessage`, {
@@ -35,10 +37,11 @@ export default async function handler(req, res) {
                         text: message.text,
                     }),
                 });
+
                 const sendData = await sendResponse.json();
 
+                // Verifica se a mensagem foi enviada com sucesso
                 if (sendData.ok) {
-                    // Envio bem-sucedido
                     res.status(200).json({ success: true, message: 'Mensagem replicada com sucesso!' });
                 } else {
                     // Erro ao enviar a mensagem
