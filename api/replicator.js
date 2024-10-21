@@ -4,7 +4,7 @@ const sentMessageIds = new Set();
 // Função para manter o serviço ativo
 const keepAlive = async () => {
     try {
-        await fetch(`https://replicabot.vercel.app/api/replicator`); // URL do seu webhook
+        await fetch(`https://replicabot.vercel.app/api/replicator.js`); // URL do seu webhook
     } catch (error) {
         console.error('Erro ao manter a aplicação ativa:', error);
     }
