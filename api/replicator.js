@@ -27,7 +27,17 @@ export default async function handler(req, res) {
         // Verifica se a mensagem é do canal de origem
         if (update.channel_post && update.channel_post.chat.id == chatIdOrigem) {
             const message = update.channel_post;
+// Adiciona o keep alive ao replicator.js
+const keepAlive = async () => {
+    try {
+        await fetch(`https://replicabot.vercel.app/api/replicator`); // Substitua pela URL do seu webhook
+    } catch (error) {
+        console.error('Erro ao manter a aplicação ativa:', error);
+    }
+};
 
+// Chama a função de keep alive a cada 10 minutos
+setInterval(keepAlive, 600000); // A cada 10 minutos (600000 ms)
             // Verifica se a mensagem já foi enviada
             if (!sentMessageIds.has(message.message_id)) {
                 // Encaminhar a mensagem para o grupo/canal de destino
