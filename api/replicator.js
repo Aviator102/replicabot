@@ -19,6 +19,18 @@ export default async function handler(req, res) {
     const chatIdOrigem = '-1002029148099'; // ID do grupo/canal de origem
     const chatIdDestino = '-1002422442915'; // ID do grupo/canal de destino
 
+    // Função Keep Alive
+    const keepAlive = async () => {
+        try {
+            await fetch(`https://replicabot.vercel.app/api/replicator`); // Substitua pela URL do seu webhook
+        } catch (error) {
+            console.error('Erro ao manter a aplicação ativa:', error);
+        }
+    };
+
+    // Chama a função de keep alive a cada 10 minutos
+    setInterval(keepAlive, 600000); // A cada 10 minutos (600000 ms)
+
     // Processa a requisição somente se for POST
     if (req.method === 'POST') {
         const update = req.body;
