@@ -39,71 +39,43 @@
 <body>
     <h1>Replicação de Mensagens de Bot Telegram</h1>
 
-    <pre id="response">Carregando...</pre>
+    <div id="response">Carregando...</div>
 
     <script>
-        const tokenBotOrigem = '16837412955:AAEb5dH8PECn5oX8t5VcArRyejLMLys-pXg'; // Token do bot origem
-        const tokenBotDestino = '17348520195:AAGN8xkJXATY1OmyhLkGxu2Kv4z-lR5BtB0'; // Token do bot destino
-        const chatIdOrigem = '-11002029148099'; // ID do grupo/canal de origem
-        const chatIdDestino = '-11002422442915'; // ID do grupo/canal de destino
-        let lastMessageId = null; // Para armazenar o ID da última mensagem replicada
+        // URL da API no Vercel (adicione sua URL Vercel aqui)
+        const apiURL = 'https://seu-backend.vercel.app/api/replicator'; // Substitua pela URL do seu backend
 
-        // Função para replicar mensagens do canal de origem
-        function replicateMessages() {
-            fetch(`https://api.telegram.org/bot${tokenBotOrigem}/getUpdates?offset=-1`) // Pega a última atualização
+        // Função para obter a resposta da API
+        function getReplicatedMessage() {
+            fetch(apiURL)
                 .then(response => response.json())
-                .then(updateData => {
-                    if (updateData.ok && updateData.result.length > 0) {
-                        const message = updateData.result[0].channel_post;
-
-                        // Verifica se a mensagem é do chat correto
-                        if (message && message.chat.id == chatIdOrigem && message.message_id !== lastMessageId) {
-                            // Encaminhar a mensagem para o grupo/canal de destino
-                            fetch(`https://api.telegram.org/bot${tokenBotDestino}/sendMessage`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    chat_id: chatIdDestino,
-                                    text: message.text
-                                })
-                            })
-                            .then(response => response.json())
-                            .then(sendData => {
-                                if (sendData.ok) {
-                                    document.getElementById('response').innerHTML = `
-                                        <div class="message">
-                                            <div class="text">Mensagem replicada com sucesso!</div>
-                                            <div class="date">Última Mensagem:</div>
-                                            <div>${message.text}</div>
-                                            <div class="date">${new Date(message.date * 1000).toLocaleString()}</div>
-                                        </div>
-                                    `;
-                                    lastMessageId = message.message_id; // Atualiza o ID da última mensagem replicada
-                                } else {
-                                    document.getElementById('response').innerHTML = `
-                                        <div class="error">Erro ao replicar mensagem: ${sendData.description}</div>
-                                    `;
-                                }
-                            })
-                            .catch(error => {
-                                document.getElementById('response').innerHTML = `
-                                    <div class="error">Erro ao enviar mensagem: ${error.message}</div>
-                                `;
-                            });
-                        }
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('response').innerHTML = `
+                            <div class="message">
+                                <div class="text">Mensagem replicada com sucesso!</div>
+                                <div>${data.text}</div>
+                                <div class="date">Horário: ${data.date}</div>
+                            </div>
+                        `;
                     } else {
-                        document.getElementById('response').innerHTML = 'Nenhuma nova mensagem para replicar.';
+                        document.getElementById('response').innerHTML = `
+                            <div class="error">Erro: ${data.error}</div>
+                        `;
                     }
                 })
                 .catch(error => {
-                    document.getElementById('response').innerHTML = `Erro: ${error.message}`;
+                    document.getElementById('response').innerHTML = `
+                        <div class="error">Erro ao conectar com a API: ${error.message}</div>
+                    `;
                 });
         }
 
-        // Chama a função para replicar mensagens a cada 5 segundos
-        setInterval(replicateMessages, 5000); // Aumentei a frequência para 5 segundos
+        // Chama a função para carregar a mensagem ao abrir a página
+        getReplicatedMessage();
+
+        // Atualiza a mensagem a cada 5 segundos
+        setInterval(getReplicatedMessage, 5000);
     </script>
 </body>
 </html>
