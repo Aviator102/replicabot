@@ -104,8 +104,24 @@
                 });
         }
 
+        // Função para manter a conexão ativa
+        function keepAlive() {
+            fetch('/api/keep-alive') // Endpoint que você criará
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Erro ao manter o site ativo:', response.statusText);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao conectar ao servidor:', error);
+                });
+        }
+
         // Chama a função para replicar mensagens a cada 5 segundos
         setInterval(replicateMessages, 5000); // Aumentei a frequência para 5 segundos
+
+        // Chama a função para manter a conexão ativa a cada 5 minutos (300000 ms)
+        setInterval(keepAlive, 300000); // Ajuste o intervalo conforme necessário
     </script>
 </body>
 </html>
